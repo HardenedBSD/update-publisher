@@ -1,13 +1,13 @@
 #!/usr/local/bin/zsh
 
-name=${1}
-recordname=${2}
-buildver=${3}
+apikey=$(cat ${1})
+name=${2}
+recordname=${3}
+buildver=${4}
 recordid=""
 zoneid=""
 apiurl="https://api.cloudflare.com/client/v4"
 tmpfile=$(mktemp)
-. $(dirname $(realpath ${0}))/api.key
 
 function get_zoneid() {
 	curl -s -X GET "${apiurl}/zones?name=${name}" \

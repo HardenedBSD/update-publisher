@@ -1,0 +1,31 @@
+{
+	"apikey": "/secure/api.key",
+	"builds": [
+		{
+			"name": "master",
+			"enabled": true,
+			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
+			"branch": "hardened/current/master",
+			"dns": "amd64.master.current.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"publish": {
+				"method": "sftp",
+				"user": "shawn",
+				"host": "pkg.hardenedbsd.org",
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD/updates/hardened/current/master/amd64/"
+			}
+		},
+		{
+			"name": "10-stable",
+			"enabled": false,
+			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
+			"branch": "hardened/10-stable/master",
+			"dns": "amd64.master.10-stable.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"publish": {
+				"method": "sftp",
+				"user": "shawn",
+				"host": "pkg.hardenedbsd.org",
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD/updates/hardened/10-stable/master/amd64"
+			}
+		}
+	]
+}

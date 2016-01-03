@@ -1,0 +1,16 @@
+{
+	"builds": [
+		{
+			"enabled": true,
+			"repo": "git://github.com/HardenedBSD/hardenedBSD-playground.git",
+			"branch": "hardened/current/master-i915",
+			"dns": "amd64.master.current.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"publish": {
+				"method": "sftp",
+				"user": "shawn",
+				"host": "pkg.hardenedbsd.org",
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD-playground/updates/hardened/current/master/amd64/"
+			}
+		}
+	]
+}
