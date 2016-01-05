@@ -8,7 +8,7 @@ function do_build()
 {
 	local config nbuilds i enabled tmpfile name output res
 	local dnsstr publish_user publish_host publish_path ver
-	local dnsentry apikey
+	local dnsentry apikey kernels
 	config=${1}
 	tmpfile=$(mktemp)
 
@@ -23,11 +23,17 @@ function do_build()
 
 		echo "[*] Building ${name}"
 
+		kernels=$(jq -r ".builds[${i}].kernels" ${config})
+		if [ "${kernels}" = "null" ]; then
+			kernels="HARDENEDBSD"
+		fi
+
 		cat<<EOF > ${tmpfile}
 REPO=$(jq -r ".builds[${i}].repo" ${config})
 BRANCH=$(jq -r ".builds[${i}].branch" ${config})
 DEVMODE=""
 FULLCLEAN="yes"
+KERNELS="${kernels}"
 EOF
 		output=$(hbsd-update-build -c ${tmpfile})
 		res=$(echo ${output} | awk '{print $1;}')
