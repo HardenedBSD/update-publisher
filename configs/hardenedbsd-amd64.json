@@ -7,6 +7,7 @@
 			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
 			"branch": "hardened/current/master",
 			"dns": "amd64.master.current.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"kernels": "HARDENEDBSD LATT-SEC",
 			"publish": {
 				"method": "sftp",
 				"user": "shawn",
@@ -16,7 +17,7 @@
 		},
 		{
 			"name": "10-stable",
-			"enabled": false,
+			"enabled": true,
 			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
 			"branch": "hardened/10-stable/master",
 			"dns": "amd64.master.10-stable.hardened.hardenedbsd.updates.hardenedbsd.org",
