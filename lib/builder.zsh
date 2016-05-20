@@ -4,6 +4,15 @@ function get_number_builds() {
 	jq -r '.builds | length' ${config}
 }
 
+function sanitize_str() {
+	local str
+
+	str="${1}"
+	str=${str/\%RUNDIR\%/${TOPDIR}}
+
+	echo ${str}
+}
+
 function do_build()
 {
 	local config nbuilds i enabled tmpfile name output res
@@ -28,12 +37,20 @@ function do_build()
 			kernels="HARDENEDBSD"
 		fi
 
+		srcconf=$(jq -r ".builds[${i}].src_conf" ${config})
+		if [ "${srcconf}" != "null" ]; then
+			srcconf=$(sanitize_str ${srcconf})
+		else
+			srcconf=""
+		fi
+
 		cat<<EOF > ${tmpfile}
 REPO=$(jq -r ".builds[${i}].repo" ${config})
 BRANCH=$(jq -r ".builds[${i}].branch" ${config})
 DEVMODE=""
 FULLCLEAN="yes"
 KERNELS="${kernels}"
+SRCCONFPATH="${srcconf}"
 EOF
 		output=$(hbsd-update-build -c ${tmpfile})
 		res=$(echo ${output} | awk '{print $1;}')
