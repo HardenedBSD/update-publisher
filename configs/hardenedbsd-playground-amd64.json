@@ -2,17 +2,18 @@
 	"apikey": "/secure/api.key",
 	"builds": [
 		{
-			"name": "i915",
+			"name": "libressl",
 			"enabled": true,
 			"kernels": "HARDENEDBSD LATT-SEC",
 			"repo": "git://github.com/HardenedBSD/hardenedBSD-playground.git",
-			"branch": "hardened/experimental/master-i915",
-			"dns": "amd64.master-i915.current.hardened.hardenedbsd-playground.updates.hardenedbsd.org",
+			"branch": "hardened/current/libressl",
+			"dns": "amd64.libressl.experimental.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"src_conf": "%RUNDIR%/configs/libressl.src.conf",
 			"publish": {
 				"method": "sftp",
 				"user": "shawn",
 				"host": "pkg.hardenedbsd.org",
-				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD-playground/updates/hardened/current/master-i915/amd64"
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD-playground/updates/hardened/experimental/libressl/amd64"
 			}
 		}
 	]
