@@ -2,18 +2,17 @@
 	"apikey": "/secure/api.key",
 	"builds": [
 		{
-			"name": "libressl",
+			"name": "drm-next",
 			"enabled": true,
 			"kernels": "HARDENEDBSD LATT-SEC",
 			"repo": "git://github.com/HardenedBSD/hardenedBSD-playground.git",
-			"branch": "hardened/current/libressl",
-			"dns": "amd64.libressl.experimental.hardened.hardenedbsd.updates.hardenedbsd.org",
-			"src_conf": "%RUNDIR%/configs/libressl.src.conf",
+			"branch": "hardened/current/drm-next",
+			"dns": "amd64.drm-next.current.hardened.hardenedbsd-playground.updates.hardenedbsd.org",
 			"publish": {
 				"method": "sftp",
 				"user": "shawn",
 				"host": "pkg.hardenedbsd.org",
-				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD-playground/updates/hardened/experimental/libressl/amd64"
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD-playground/updates/hardened/current/drm-next/amd64"
 			}
 		}
 	]

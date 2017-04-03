@@ -16,6 +16,20 @@
 			}
 		},
 		{
+			"name": "11-stable",
+			"enabled": true,
+			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
+			"branch": "hardened/11-stable/master",
+			"dns": "amd64.master.11-stable.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"kernels": "HARDENEDBSD LATT-SEC",
+			"publish": {
+				"method": "sftp",
+				"user": "shawn",
+				"host": "pkg.hardenedbsd.org",
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD/updates/hardened/11-stable/master/amd64/"
+			}
+		},
+		{
 			"name": "10-stable",
 			"enabled": true,
 			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
@@ -26,6 +40,20 @@
 				"user": "shawn",
 				"host": "pkg.hardenedbsd.org",
 				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD/updates/hardened/10-stable/master/amd64"
+			}
+		},
+		{
+			"name": "11-stable-libressl",
+			"enabled": true,
+			"kernels": "HARDENEDBSD LATT-SEC",
+			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
+			"branch": "hardened/11-stable/master-libressl",
+			"dns": "amd64.master-libressl.11-stable.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"publish": {
+				"method": "sftp",
+				"user": "shawn",
+				"host": "pkg.hardenedbsd.org",
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD/updates/hardened/11-stable/master-libressl/amd64"
 			}
 		}
 	]
