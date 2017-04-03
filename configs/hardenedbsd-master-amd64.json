@@ -1,0 +1,19 @@
+{
+	"apikey": "/secure/api.key",
+	"builds": [
+		{
+			"name": "master",
+			"enabled": true,
+			"repo": "git://github.com/HardenedBSD/hardenedBSD.git",
+			"branch": "hardened/current/master",
+			"dns": "amd64.master.current.hardened.hardenedbsd.updates.hardenedbsd.org",
+			"kernels": "HARDENEDBSD LATT-SEC",
+			"publish": {
+				"method": "sftp",
+				"user": "shawn",
+				"host": "pkg.hardenedbsd.org",
+				"directory": "/www/updates.hardenedbsd.org/pub/HardenedBSD/updates/hardened/current/master/amd64/"
+			}
+		}
+	]
+}
