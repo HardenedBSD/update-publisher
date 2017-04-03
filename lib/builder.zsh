@@ -44,13 +44,37 @@ function do_build()
 			srcconf=""
 		fi
 
+		devmode=$(jq -r ".builds[${i}].devmode" ${config})
+		if [ "${devmode}" = "null" ]; then
+			devmode=""
+		fi
+
+        target=$(jq -r ".builds[${i}].target" ${config})
+        if [ "${target}" = "null" ]; then
+            target=$(uname -m)
+
+        fi
+
+        target_arch=$(jq -r ".builds[${i}].target_arch" ${config})
+        if [ "${target_arch}" = "null" ]; then
+            target_arch=$(uname -p)
+        fi
+
+        needs_cross_utils=$(jq -r ".builds[${i}].needs_cross_utils" ${config})
+        if [ "${needs_cross_utils}" = "null" ]; then
+            needs_cross_utils="1"
+        fi
+
 		cat<<EOF > ${tmpfile}
 REPO=$(jq -r ".builds[${i}].repo" ${config})
 BRANCH=$(jq -r ".builds[${i}].branch" ${config})
-DEVMODE=""
+DEVMODE="${devmode}"
 FULLCLEAN="yes"
 KERNELS="${kernels}"
 SRCCONFPATH="${srcconf}"
+TARGET="${target}"
+TARGET_ARCH="${target_arch}"
+NEED_CROSS_UTILS=${needs_cross_utils}
 EOF
 		output=$(hbsd-update-build -c ${tmpfile})
 		res=$(echo ${output} | awk '{print $1;}')
