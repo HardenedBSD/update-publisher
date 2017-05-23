@@ -40,6 +40,10 @@ function do_build()
 		srcconf=$(jq -r ".builds[${i}].src_conf" ${config})
 		if [ "${srcconf}" != "null" ]; then
 			srcconf=$(sanitize_str ${srcconf})
+            if [ ! -f ${srcconf} ]; then
+                echo "[-] SRCCONF ${srcconf} does not exist."
+                continue
+            fi
 		else
 			srcconf=""
 		fi
@@ -65,6 +69,11 @@ function do_build()
             needs_cross_utils="1"
         fi
 
+        scriptfile=$(jq -r ".builds[${i}].scriptfile" ${config})
+        if [ "${scriptfile}" = "null" ]; then
+            scriptfile=""
+        fi
+
 		cat<<EOF > ${tmpfile}
 REPO=$(jq -r ".builds[${i}].repo" ${config})
 BRANCH=$(jq -r ".builds[${i}].branch" ${config})
@@ -75,6 +84,7 @@ SRCCONFPATH="${srcconf}"
 TARGET="${target}"
 TARGET_ARCH="${target_arch}"
 NEED_CROSS_UTILS=${needs_cross_utils}
+SCRIPTFILE="${scriptfile}"
 EOF
 		output=$(hbsd-update-build -c ${tmpfile})
 		res=$(echo ${output} | awk '{print $1;}')
