@@ -1,4 +1,3 @@
-#!/usr/local/bin/zsh
 #-
 # Copyright (c) 2018 HardenedBSD
 # Author: Shawn Webb <shawn.webb@hardenedbsd.org>
@@ -26,54 +25,24 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-function usage() {
-	cat <<EOF >&2
-USAGE: ${1} -c config
-EOF
+function publish_sftp() {
+	local publish_user publish_host publish_path tmpfile
+	local config=$1 i=$2 j=$3 dnsstr=$4 ver=$5
+	tmpfile=$(mktemp)
 
-	exit 1
+
+	publish_user=$(jq -r ".builds[${i}].publish[$j].user" ${config})
+	publish_host=$(jq -r ".builds[${i}].publish[$j].host" ${config})
+	publish_path=$(jq -r ".builds[${i}].publish[$j].directory" ${config})
+
+	echo ${dnsstr} > ${tmpfile}
+	chmod 744 ${tmpfile}
+
+
+	sudo -u ${publish_user} scp /builds/updater/output/update-${ver}.tar \
+	    ${publish_host}:${publish_path}/
+	sudo -u ${publish_user} scp ${tmpfile} \
+	    ${publish_host}:${publish_path}/update-latest.txt
+
+
 }
-
-function get_topdir() {
-	local self
-	self=${1}
-	echo $(realpath $(dirname ${self}))
-}
-
-function main() {
-	local self
-	local config
-
-	self=${1}
-
-	TOPDIR=$(get_topdir ${self})
-	shift
-	cd ${TOPDIR}
-
-	source ./lib/builder.zsh
-	source ./lib/publish.zsh
-
-	while getopts 'hc:' opt; do
-		case "${opt}" in
-			c)
-				config="${OPTARG}"
-				;;
-			*)
-				usage ${self}
-				;;
-		esac
-	done
-
-	if [ -z "${config}" ]; then
-		usage ${self}
-	fi
-
-	if [ ! "$(id -u)" = "0" ]; then
-		echo "[-] This tool must be run as root." >&2
-		exit 1
-	fi
-
-	do_build ${config}
-}
-
-main ${0} $*

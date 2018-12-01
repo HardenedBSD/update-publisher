@@ -1,9 +1,6 @@
-#!/usr/local/bin/zsh
 #-
 # Copyright (c) 2018 HardenedBSD
-# Author: Shawn Webb <shawn.webb@hardenedbsd.org>
-#
-# This work originally sponsored by G2, Inc
+# Author: Johannes Meixner <johannes@perceivon.net>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,54 +23,21 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-function usage() {
-	cat <<EOF >&2
-USAGE: ${1} -c config
-EOF
+function publish_cp() {
+	local publish_path
+	local config=$1 i=$2 j=$3 dnsstr=$4 ver=$5
 
-	exit 1
+	echo ${dnsstr} > ${tmpfile}
+	chmod 744 ${tmpfile}
+
+
+	publish_path=$(jq -r ".builds[${i}].publish[$j].directory" ${config})
+
+	mkdir -p ${publish_path}
+
+	cp -a /builds/updater/output/update-${ver}.tar \
+	    ${publish_path}/
+	cp -a ${tmpfile} ${publish_path}/update-latest.txt
+
+
 }
-
-function get_topdir() {
-	local self
-	self=${1}
-	echo $(realpath $(dirname ${self}))
-}
-
-function main() {
-	local self
-	local config
-
-	self=${1}
-
-	TOPDIR=$(get_topdir ${self})
-	shift
-	cd ${TOPDIR}
-
-	source ./lib/builder.zsh
-	source ./lib/publish.zsh
-
-	while getopts 'hc:' opt; do
-		case "${opt}" in
-			c)
-				config="${OPTARG}"
-				;;
-			*)
-				usage ${self}
-				;;
-		esac
-	done
-
-	if [ -z "${config}" ]; then
-		usage ${self}
-	fi
-
-	if [ ! "$(id -u)" = "0" ]; then
-		echo "[-] This tool must be run as root." >&2
-		exit 1
-	fi
-
-	do_build ${config}
-}
-
-main ${0} $*

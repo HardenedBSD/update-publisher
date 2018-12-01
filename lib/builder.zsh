@@ -42,9 +42,7 @@ function sanitize_str() {
 
 function do_build()
 {
-	local config nbuilds i enabled tmpfile name output res
-	local dnsstr publish_user publish_host publish_path ver
-	local dnsentry apikey kernels
+	local config nbuilds i enabled tmpfile name output res kernels
 	config=${1}
 	tmpfile=$(mktemp)
 
@@ -67,10 +65,10 @@ function do_build()
 		srcconf=$(jq -r ".builds[${i}].src_conf" ${config})
 		if [ "${srcconf}" != "null" ]; then
 			srcconf=$(sanitize_str ${srcconf})
-            if [ ! -f ${srcconf} ]; then
-                echo "[-] SRCCONF ${srcconf} does not exist."
-                continue
-            fi
+			if [ ! -f ${srcconf} ]; then
+				echo "[-] SRCCONF ${srcconf} does not exist."
+				continue
+			fi
 		else
 			srcconf=""
 		fi
@@ -80,43 +78,55 @@ function do_build()
 			devmode=""
 		fi
 
-        target=$(jq -r ".builds[${i}].target" ${config})
-        if [ "${target}" = "null" ]; then
-            target=$(uname -m)
+		target=$(jq -r ".builds[${i}].target" ${config})
+		if [ "${target}" = "null" ]; then
+			target=$(uname -m)
+		fi
 
-        fi
+		target_arch=$(jq -r ".builds[${i}].target_arch" ${config})
+		if [ "${target_arch}" = "null" ]; then
+			target_arch=$(uname -p)
+		fi
 
-        target_arch=$(jq -r ".builds[${i}].target_arch" ${config})
-        if [ "${target_arch}" = "null" ]; then
-            target_arch=$(uname -p)
-        fi
+		needs_cross_utils=$(jq -r ".builds[${i}].needs_cross_utils" ${config})
+		if [ "${needs_cross_utils}" = "null" ]; then
+			needs_cross_utils="1"
+		fi
 
-        needs_cross_utils=$(jq -r ".builds[${i}].needs_cross_utils" ${config})
-        if [ "${needs_cross_utils}" = "null" ]; then
-            needs_cross_utils="1"
-        fi
+		want_chroot_build=$(jq -r ".builds[${i}].want_chroot_build" ${config})
+		if [ "${needs_cross_utils}" = "null" ]; then
+			want_chroot_build="0"
+		fi
 
-        scriptfile=$(jq -r ".builds[${i}].scriptfile" ${config})
-        if [ "${scriptfile}" = "null" ]; then
-            scriptfile=""
-        fi
+		unsigned=$(jq -r ".builds[${i}].unsigned" ${config})
+		if [ "${unsigned}" = "null" ]; then
+			unsigned="0"
+		fi
+
+		scriptfile=$(jq -r ".builds[${i}].scriptfile" ${config})
+		if [ "${scriptfile}" = "null" ]; then
+			scriptfile=""
+		fi
 
 		cat<<EOF > ${tmpfile}
 REPO=$(jq -r ".builds[${i}].repo" ${config})
 BRANCH=$(jq -r ".builds[${i}].branch" ${config})
 DEVMODE="${devmode}"
 FULLCLEAN="yes"
+UNSIGNED="${unsigned}"
 KERNELS="${kernels}"
 SRCCONFPATH="${srcconf}"
 TARGET="${target}"
 TARGET_ARCH="${target_arch}"
 NEED_CROSS_UTILS=${needs_cross_utils}
+WANT_CHROOT_BUILD=${want_chroot_build}
 SCRIPTFILE="${scriptfile}"
 EOF
 		output=$(hbsd-update-build -c ${tmpfile})
 		res=$(echo ${output} | awk '{print $1;}')
 		echo "    [+] res: ${output}"
 
+		# TODO: improve error handling here
 		if [ ! "${res}" = "OK" ]; then
 			echo "    [-] ${name} failed"
 			continue
@@ -125,22 +135,24 @@ EOF
 		dnsstr=$(echo ${output} | awk '{print $2;}')
 		ver=$(echo ${dnsstr} | sed 's,|, ,g' | awk '{print $2;}')
 
-		echo ${dnsstr} > ${tmpfile}
-		chmod 744 ${tmpfile}
+		publish=$(jq -r ".builds[${i}].publish" ${config})
+		if [ "${publish}" != "null" ]; then
+			do_publish ${config} ${i} ${dnsstr} ${ver}
+		fi
 
-		publish_user=$(jq -r ".builds[${i}].publish.user" ${config})
-		publish_host=$(jq -r ".builds[${i}].publish.host" ${config})
-		publish_path=$(jq -r ".builds[${i}].publish.directory" ${config})
-		dnsentry=$(jq -r ".builds[${i}].dns" ${config})
-		apikey=$(jq -r ".apikey" ${config})
-
-		sudo -u ${publish_user} scp /builds/updater/output/update-${ver}.tar \
-		    ${publish_host}:${publish_path}/
-		sudo -u ${publish_user} scp ${tmpfile} \
-		    ${publish_host}:${publish_path}/update-latest.txt
-
-		${TOPDIR}/updatedns.zsh ${apikey} hardenedbsd.org ${dnsentry} ${dnsstr}
+		sign=$(jq -r ".builds[${i}].sign" ${config})
+		if [ "${sign}" != "null" ]; then
+			do_sign ${config} ${i} ${dnsstr}
+		fi
 	done
 
 	rm -f ${tmpfile}
+}
+
+function do_sign() {
+	local dnsentry apikey dnsstr
+	local config=$1 i=$2 dnsstr=$3
+	dnsentry=$(jq -r ".builds[${i}].sign.dns" ${config})
+	apikey=$(jq -r ".signing.apikey" ${config})
+	${TOPDIR}/updatedns.zsh ${apikey} hardenedbsd.org ${dnsentry} ${dnsstr}
 }
