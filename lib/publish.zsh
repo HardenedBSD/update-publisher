@@ -1,9 +1,6 @@
-#!/usr/local/bin/zsh
 #-
 # Copyright (c) 2018 HardenedBSD
-# Author: Shawn Webb <shawn.webb@hardenedbsd.org>
-#
-# This work originally sponsored by G2, Inc
+# Author: Johannes Meixner <johannes@perceivon.net>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,54 +23,27 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-function usage() {
-	cat <<EOF >&2
-USAGE: ${1} -c config
-EOF
 
-	exit 1
-}
+function do_publish() {
+	local dnsstr publish_user publish_host publish_path ver build dnsstr ver
+	local config=$1 i=$2 dnsstr=$3 ver=$4
 
-function get_topdir() {
-	local self
-	self=${1}
-	echo $(realpath $(dirname ${self}))
-}
-
-function main() {
-	local self
-	local config
-
-	self=${1}
-
-	TOPDIR=$(get_topdir ${self})
-	shift
-	cd ${TOPDIR}
-
-	source ./lib/builder.zsh
-	source ./lib/publish.zsh
-
-	while getopts 'hc:' opt; do
-		case "${opt}" in
-			c)
-				config="${OPTARG}"
-				;;
-			*)
-				usage ${self}
-				;;
-		esac
+	# foreach publish[i]
+	# method = jq .build[i][publish]j
+	npublish=$(jq -r ".builds[$i].publish | length" ${config})
+	for ((j=0; j<${npublish}; j++)); do
+		method=$(jq -r ".builds[$i].publish[$j].method" ${config})
+		if [ ! -f lib/publishers/${method}.zsh ]; then
+			echo "[-] Publisher for ${method} does not exist."
+			continue
+		else
+			. "lib/publishers/${method}.zsh"
+		fi
+		if [ ! "$(whence -w publish_${method})" = "publish_${method}: function" ]; then
+			echo "[-] Publisher method for ${method} does not exist."
+			continue
+		fi
+		echo "[*] Publishing ${name} via ${method}"
+		publish_${method} ${config} ${i} ${j} ${dnsstr} ${ver}
 	done
-
-	if [ -z "${config}" ]; then
-		usage ${self}
-	fi
-
-	if [ ! "$(id -u)" = "0" ]; then
-		echo "[-] This tool must be run as root." >&2
-		exit 1
-	fi
-
-	do_build ${config}
 }
-
-main ${0} $*
